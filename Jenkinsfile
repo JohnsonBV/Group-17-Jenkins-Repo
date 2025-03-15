@@ -16,9 +16,9 @@ pipeline {
 
                 git branch: 'main',
                     
-                    credentialsid: d84f6cf3-9967-40d4-83b6-282ed9538e1c
+                    credentialsId: d84f6cf3-9967-40d4-83b6-282ed9538e1c,
                 
-                    url: 'https://github.com/YOUR-USERNAME/NumberGuessGame.git'
+                    url: 'https://github.com/JohnsonBV/Group-17-Jenkins-Repo.git'
 
 
             }
