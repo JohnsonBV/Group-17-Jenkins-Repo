@@ -14,7 +14,12 @@ pipeline {
 
             steps {
 
-                git branch: 'main', url: 'https://github.com/YOUR-USERNAME/NumberGuessGame.git'
+                git branch: 'main',
+                    
+                    credentialsid: d84f6cf3-9967-40d4-83b6-282ed9538e1c
+                
+                    url: 'https://github.com/YOUR-USERNAME/NumberGuessGame.git'
+
 
             }
 
