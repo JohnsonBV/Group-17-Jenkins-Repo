@@ -1,5 +1,4 @@
 pipeline {
-
     agent any
 
     environment {        
@@ -35,9 +34,7 @@ pipeline {
         stage('Undeploy from Tomcat') {
             steps {
                 script {
-                    sh '''
-                    curl -v -u ${TOMCAT_USER}:${TOMCAT_PASSWORD} "${TOMCAT_URL}/manager/text/undeploy?path=/${APP_NAME}"
-                    '''
+                    sh "curl -v -u ${TOMCAT_USER}:${TOMCAT_PASSWORD} '${TOMCAT_URL}/manager/text/undeploy?path=/${APP_NAME}' || true"
                 }
             }
         }
@@ -45,20 +42,20 @@ pipeline {
         stage('Deploy to Tomcat') {
             steps {
                 script {
-                    def tomcatDeployUrl = "${TOMCAT_URL}/manager/text/deploy?path=/${APP_NAME}&update=true"
-                    def tomcatUndeployUrl = "${TOMCAT_URL}/manager/text/undeploy?path=/${APP_NAME}"
-
                     sh """
                     echo "Deploying to Tomcat..."
 
+                    # Ensure Tomcat directory exists
+                    sudo mkdir -p ${TOMCAT_DIR}
+
                     # Remove existing deployment
-                    curl -v -u ${TOMCAT_USER}:${TOMCAT_PASSWORD} "$tomcatUndeployUrl" || true
+                    curl -v -u ${TOMCAT_USER}:${TOMCAT_PASSWORD} '${TOMCAT_URL}/manager/text/undeploy?path=/${APP_NAME}' || true
 
                     # Copy WAR file to Tomcat webapps directory
-                    cp target/${APP_NAME}-1.0-SNAPSHOT.war ${TOMCAT_DIR}/${APP_NAME}.war
+                    sudo cp target/${APP_NAME}-1.0-SNAPSHOT.war ${TOMCAT_DIR}/${APP_NAME}.war
 
                     # Restart Tomcat service
-                    systemctl restart tomcat || echo "Tomcat restart failed, check logs."
+                    sudo systemctl restart tomcat || echo "Tomcat restart failed, check logs."
 
                     # Verify deployment
                     ls -lh ${TOMCAT_DIR}
