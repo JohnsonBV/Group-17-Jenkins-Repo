@@ -14,7 +14,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
-                    credentialsId: 'adf85567-a618-406c-b597-4add5379a357',
+                    credentialsId: '76fdfa8c-b17a-457b-b004-00c2915fe4a5',
                     url: 'https://github.com/JohnsonBV/Group-17-Jenkins-Repo.git'
             }
         }
