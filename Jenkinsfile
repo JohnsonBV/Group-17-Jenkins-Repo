@@ -6,7 +6,7 @@ pipeline {
         TOMCAT_PASSWORD = 'admin123'
         TOMCAT_URL = 'http://your-tomcat-server-ip:8080'
         APP_NAME = 'NumberGuessGame'
-        WAR_FILE = "target/NumberGuessGame.war"
+        WAR_FILE = "/var/lib/jenkins/workspace/NumberGuessGame/target/NumberGuessGame.war"
     }
  
     stages {
@@ -18,9 +18,16 @@ pipeline {
             }
         }
  
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()  // Clean previous builds
+            }
+        }
+ 
         stage('Build') {
             steps {
                 sh 'mvn clean package'
+                sh 'ls -l target/'  // Verify that the WAR file exists
             }
         }
  
@@ -28,9 +35,10 @@ pipeline {
             steps {
                 script {
                     def tomcatDeployUrl = "$TOMCAT_URL/manager/text/deploy?path=/$APP_NAME&update=true"
-                    
+ 
                     sh """
-                    curl -u $TOMCAT_USER:$TOMCAT_PASSWORD --upload-file $WAR_FILE "$tomcatDeployUrl"
+                    echo "Deploying to Tomcat..."
+                    curl -v -u $TOMCAT_USER:$TOMCAT_PASSWORD --upload-file $WAR_FILE "$tomcatDeployUrl"
                     """
                 }
             }
