@@ -30,10 +30,10 @@ pipeline {
         stage('Undeploy from Tomcat') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: '3c6d307b-642f-4f13-98be-1526086453ed', username: 'admin', password: 'admin123')]) {
+                    withCredentials([usernamePassword(credentialsId: '3c6d307b-642f-4f13-98be-1526086453ed', usernameVariable: 'admin', passwordVariable: 'admin123')]) {
                         sh """
                         echo "Undeploying existing app..."
-                        curl -v -u $admin:$admin123"http://3.87.36.102:8080/manager/text/undeploy?path=/$APP_NAME" || true
+                        curl -v -u ${admin}:${admin123} "http://3.87.36.102:8080/manager/text/undeploy?path=/${APP_NAME}" || true
                         """
                     }
                 }
@@ -43,7 +43,7 @@ pipeline {
         stage('Deploy to Tomcat') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: '3c6d307b-642f-4f13-98be-1526086453ed', username: 'admin', password: 'admin123')]) {
+                    withCredentials([usernamePassword(credentialsId: '3c6d307b-642f-4f13-98be-1526086453ed', usernameVariable: 'admin', passwordVariable: 'admin123')]) {
                         sh """
                         echo "Deploying to Tomcat..."
 
