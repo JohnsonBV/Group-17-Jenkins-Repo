@@ -31,8 +31,9 @@ pipeline {
         stage('Undeploy from Tomcat') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'tomcat-deploy', usernameVariable: 'admin', passwordVariable: 'admin123')]) {
+                    withCredentials([usernamePassword(credentialsId: 'tomcat-deploy', usernameVariable: 'TOMCAT_USER', passwordVariable: 'TOMCAT_PASSWORD')]) {
                         sh """
+                        echo "Undeploying existing app..."
                         curl -v -u "$TOMCAT_USER:$TOMCAT_PASSWORD" "$TOMCAT_URL/manager/text/undeploy?path=/$APP_NAME" || true
                         """
                     }
@@ -43,11 +44,11 @@ pipeline {
         stage('Deploy to Tomcat') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'tomcat-deploy', usernameVariable: 'admin', passwordVariable: 'admin123')]) {
+                    withCredentials([usernamePassword(credentialsId: 'tomcat-deploy', usernameVariable: 'TOMCAT_USER', passwordVariable: 'TOMCAT_PASSWORD')]) {
                         sh """
                         echo "Deploying to Tomcat..."
                         cp target/${APP_NAME}-1.0-SNAPSHOT.war ${TOMCAT_DIR}/${APP_NAME}.war
-                        systemctl restart tomcat || echo "Tomcat restart failed, check logs."
+                        sudo systemctl restart tomcat || echo "Tomcat restart failed, check logs."
                         echo "Deployment Complete!"
                         """
                     }
