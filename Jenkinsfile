@@ -2,9 +2,11 @@ pipeline {
     agent any
 
     environment {        
-        TOMCAT_DIR = '/opt/tomcat/apache-tomcat-9.0.86/webapps' 
+        TOMCAT_DIR = '/opt/tomcat/apache-tomcat-9.0.86' 
         APP_NAME = "NumberGuessGame"
         TOMCAT_URL = "http://3.87.36.102:8080"
+        TOMCAT_USER = "admin"           // ✅ Explicitly setting username
+        TOMCAT_PASSWORD = "admin123"     // ⚠️ WARNING: Hardcoding passwords is insecure!
     }
 
     stages {
@@ -31,18 +33,27 @@ pipeline {
         stage('Undeploy from Tomcat') {
             steps {
                 script {
-                   withCredentials([usernamePassword(credentialsId: 'tomcat-deploy', usernameVariable: 'admin', passwordVariable: 'admin123')]) {
-    sh """
-    echo "Undeploying existing app..."
-    curl -v -u \\"$TOMCAT_USER\\":\\"$TOMCAT_PASSWORD\\" "$TOMCAT_URL/manager/text/undeploy?path=/$APP_NAME" || true
-    """
-                   }
-
-                    }
+                    sh """
+                    echo "Undeploying existing app..."
+                    curl -v -u "$TOMCAT_USER:$TOMCAT_PASSWORD" "$TOMCAT_URL/manager/text/undeploy?path=/$APP_NAME" || true
+                    """
                 }
             }
         }
 
+        stage('Deploy to Tomcat') {
+            steps {
+                script {
+                    sh """
+                    echo "Deploying to Tomcat..."
+                    cp target/${APP_NAME}-1.0-SNAPSHOT.war ${TOMCAT_DIR}/${APP_NAME}.war
+                    systemctl restart tomcat || echo "Tomcat restart failed, check logs."
+                    echo "Deployment Complete!"
+                    """
+                }
+            }
+        }
+    }
 
     post {
         success {
