@@ -2,7 +2,9 @@ pipeline {
 
     agent any
 
-    environment {
+    environment {        TOMCAT_USER = 'admin' 
+        TOMCAT_PASSWORD = 'admin123' 
+        TOMCAT_URL = 'http://3.87.36.102:8080' 
 
         APP_NAME = "NumberGuessGame"
 
@@ -45,10 +47,13 @@ pipeline {
 
         }
 
-        stage('Deploy') {
-
+        stage('Deploy to Tomcat') {
             steps {
-
+                script {
+                    def tomcatDeployUrl = "$TOMCAT_URL/manager/text/deploy?path=/$APP_NAME&update=true"
+                    sh """
+                    curl -u $TOMCAT_USER:$TOMCAT_PASSWORD -T target/$APP_NAME.war "$tomcatDeployUrl"
+                    """
                 sh 'cp target/*.war /opt/tomcat/webapps/'
 
             }
@@ -58,4 +63,13 @@ pipeline {
     }
 
 }
- 
+
+     post {
+        success {
+            echo 'Deployment successful!'
+        }
+        failure {
+            echo 'Deployment failed! Check logs.'
+        }
+    }
+}
