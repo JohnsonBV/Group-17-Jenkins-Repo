@@ -12,23 +12,29 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', 
-                    credentialsId: 'd84f6cf3-9967-40d4-83b6-282ed9538e1c', 
+                git branch: 'main',
+                    credentialsId: 'd84f6cf3-9967-40d4-83b6-282ed9538e1c',
                     url: 'https://github.com/JohnsonBV/Group-17-Jenkins-Repo.git'
+            }
+        }
+ 
+        stage('Verify Workspace') {
+            steps {
+                sh 'ls -l'  // Ensure files exist after checkout
             }
         }
  
         stage('Clean Workspace') {
             steps {
-                deleteDir()  // Clean previous builds
+                deleteDir()  // Remove old build files
             }
         }
  
         stage('Build') {
             steps {
-                sh 'mvn clean package'
-                sh 'ls -l target/'  // Verify that the WAR file exists
-                sh 'if [ ! -f $WAR_FILE ]; then echo "WAR file not found!"; exit 1; fi'
+                sh 'cd /var/lib/jenkins/workspace/NumberGuessGame && mvn clean package'
+                sh 'ls -l target/'  // Confirm that the WAR file exists
+                sh '[[ -f "$WAR_FILE" ]] || { echo "WAR file not found!"; exit 1; }'
             }
         }
  
@@ -39,7 +45,7 @@ pipeline {
  
                     sh """
                     echo "Deploying to Tomcat..."
-                    curl -v -u $TOMCAT_USER:$TOMCAT_PASSWORD --upload-file $WAR_FILE "$tomcatDeployUrl"
+                    curl -v --fail -u $TOMCAT_USER:$TOMCAT_PASSWORD --upload-file $WAR_FILE "$tomcatDeployUrl" || { echo "Deployment failed!"; exit 1; }
                     """
                 }
             }
