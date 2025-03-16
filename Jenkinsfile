@@ -32,19 +32,21 @@ pipeline {
             }
         }
 
-         stages {
         stage('Undeploy from Tomcat') {
             steps {
                 script {
                     sh '''
-                    curl -v -u admin:admin123 "http://3.87.36.102:8080/manager/text/undeploy?path=/NumberGuessGame"
+                    curl -v -u ${TOMCAT_USER}:${TOMCAT_PASSWORD} "${TOMCAT_URL}/manager/text/undeploy?path=/${APP_NAME}"
                     '''
+                }
+            }
+        }
+
         stage('Deploy to Tomcat') {
             steps {
                 script {
-                 def tomcatDeployUrl = "${TOMCAT_URL}/manager/text/deploy?path=/${APP_NAME}&update=true"
-                 def tomcatUndeployUrl = "${TOMCAT_URL}/manager/text/undeploy?path=/${APP_NAME}"
-
+                    def tomcatDeployUrl = "${TOMCAT_URL}/manager/text/deploy?path=/${APP_NAME}&update=true"
+                    def tomcatUndeployUrl = "${TOMCAT_URL}/manager/text/undeploy?path=/${APP_NAME}"
 
                     sh """
                     echo "Deploying to Tomcat..."
@@ -53,10 +55,10 @@ pipeline {
                     curl -v -u ${TOMCAT_USER}:${TOMCAT_PASSWORD} "$tomcatUndeployUrl" || true
 
                     # Copy WAR file to Tomcat webapps directory
-                    sudo cp target/${APP_NAME}-1.0-SNAPSHOT.war ${TOMCAT_DIR}/${APP_NAME}.war
+                    cp target/${APP_NAME}-1.0-SNAPSHOT.war ${TOMCAT_DIR}/${APP_NAME}.war
 
                     # Restart Tomcat service
-                    sudo systemctl restart tomcat
+                    systemctl restart tomcat || echo "Tomcat restart failed, check logs."
 
                     # Verify deployment
                     ls -lh ${TOMCAT_DIR}
