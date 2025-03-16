@@ -35,8 +35,9 @@ pipeline {
         stage('Deploy to Tomcat') {
             steps {
                 script {
-                    def tomcatDeployUrl = "${TOMCAT_URL}/manager/text/deploy?path=/${APP_NAME}&update=true"
-                    def tomcatUndeployUrl = "${TOMCAT_URL}/manager/text/undeploy?path=/${APP_NAME}"
+                 def tomcatDeployUrl = "${TOMCAT_URL}/manager/text/deploy?path=/${APP_NAME}&update=true"
+                 def tomcatUndeployUrl = "${TOMCAT_URL}/manager/text/undeploy?path=/${APP_NAME}"
+
 
                     sh """
                     echo "Deploying to Tomcat..."
