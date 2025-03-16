@@ -33,7 +33,7 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'tomcat-deploy', usernameVariable: 'admin', passwordVariable: 'admin123')]) {
                         sh """
-                        curl -v -u $TOMCAT_USER:$TOMCAT_PASSWORD "$TOMCAT_URL/manager/text/undeploy?path=/$APP_NAME" || true
+                        curl -v -u "$TOMCAT_USER:$TOMCAT_PASSWORD" "$TOMCAT_URL/manager/text/undeploy?path=/$APP_NAME" || true
                         """
                     }
                 }
