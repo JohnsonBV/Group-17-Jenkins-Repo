@@ -3,10 +3,9 @@ pipeline {
 
     environment {        
         TOMCAT_DIR = '/opt/tomcat/apache-tomcat-9.0.86/webapps' 
-        TOMCAT_USER = 'admin' 
-        TOMCAT_PASSWORD = 'admin123' 
         TOMCAT_URL = 'http://3.87.36.102:8080' 
         APP_NAME = "NumberGuessGame"
+        TOMCAT_CREDENTIALS = credentials('3c6d307b-642f-4f13-98be-1526086453ed')  // Use stored credentials in Jenkins
     }
 
     stages {
@@ -34,7 +33,11 @@ pipeline {
         stage('Undeploy from Tomcat') {
             steps {
                 script {
-                    sh "curl -v -u ${TOMCAT_USER}:${TOMCAT_PASSWORD} '${TOMCAT_URL}/manager/text/undeploy?path=/${APP_NAME}' || true"
+                    sh """
+                    echo "Undeploying existing app..."
+                    curl -v -u ${TOMCAT_CREDENTIALS_USR}:${TOMCAT_CREDENTIALS_PSW} \
+                    '${TOMCAT_URL}/manager/text/undeploy?path=/${APP_NAME}' || true
+                    """
                 }
             }
         }
@@ -47,9 +50,6 @@ pipeline {
 
                     # Ensure Tomcat directory exists
                     sudo mkdir -p ${TOMCAT_DIR}
-
-                    # Remove existing deployment
-                    curl -v -u ${TOMCAT_USER}:${TOMCAT_PASSWORD} '${TOMCAT_URL}/manager/text/undeploy?path=/${APP_NAME}' || true
 
                     # Copy WAR file to Tomcat webapps directory
                     sudo cp target/${APP_NAME}-1.0-SNAPSHOT.war ${TOMCAT_DIR}/${APP_NAME}.war
@@ -69,10 +69,10 @@ pipeline {
 
     post {
         success {
-            echo 'Deployment successful!'
+            echo '✅ Deployment successful!'
         }
         failure {
-            echo 'Deployment failed! Check logs.'
+            echo '❌ Deployment failed! Check logs.'
         }
     }
 }
