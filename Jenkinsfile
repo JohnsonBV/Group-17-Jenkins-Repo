@@ -4,7 +4,6 @@ pipeline {
     environment {        
         TOMCAT_DIR = '/opt/tomcat/apache-tomcat-9.0.86/webapps' 
         APP_NAME = "NumberGuessGame"
-        TOMCAT_URL = "http://3.87.36.102:8080"
     }
 
     stages {
@@ -31,10 +30,10 @@ pipeline {
         stage('Undeploy from Tomcat') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: '3c6d307b-642f-4f13-98be-1526086453ed', usernameVariable: 'TOMCAT_USER', passwordVariable: 'TOMCAT_PASSWORD')]) {
+                    withCredentials([usernamePassword(credentialsId: 'tomcat-credentials', usernameVariable: 'TOMCAT_USER', passwordVariable: 'TOMCAT_PASSWORD')]) {
                         sh """
-                        echo "Undeploying previous version..."
-                        curl -v -u $TOMCAT_USER:$TOMCAT_PASSWORD "$TOMCAT_URL/manager/text/undeploy?path=/$APP_NAME" || true
+                        echo "Undeploying existing app..."
+                        curl -v -u $TOMCAT_USER:$TOMCAT_PASSWORD "http://3.87.36.102:8080/manager/text/undeploy?path=/$APP_NAME" || true
                         """
                     }
                 }
@@ -44,17 +43,21 @@ pipeline {
         stage('Deploy to Tomcat') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: '3c6d307b-642f-4f13-98be-1526086453ed', usernameVariable: 'TOMCAT_USER', passwordVariable: 'TOMCAT_PASSWORD')]) {
+                    withCredentials([usernamePassword(credentialsId: 'tomcat-credentials', usernameVariable: 'TOMCAT_USER', passwordVariable: 'TOMCAT_PASSWORD')]) {
                         sh """
                         echo "Deploying to Tomcat..."
 
                         # Ensure Tomcat directory exists
                         sudo mkdir -p ${TOMCAT_DIR}
 
-                        # Deploy using Tomcat Manager API
-                        curl -v -u $TOMCAT_USER:$TOMCAT_PASSWORD \
-                        --upload-file target/${APP_NAME}-1.0-SNAPSHOT.war \
-                        "$TOMCAT_URL/manager/text/deploy?path=/$APP_NAME&update=true"
+                        # Copy WAR file to Tomcat webapps directory
+                        cp target/${APP_NAME}-1.0-SNAPSHOT.war ${TOMCAT_DIR}/${APP_NAME}.war
+
+                        # Restart Tomcat service
+                        systemctl restart tomcat || echo "Tomcat restart failed, check logs."
+
+                        # Verify deployment
+                        ls -lh ${TOMCAT_DIR}
 
                         echo "Deployment Complete!"
                         """
