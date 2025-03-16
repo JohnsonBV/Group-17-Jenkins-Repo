@@ -35,8 +35,19 @@ pipeline {
             steps {
                 script {
                     def tomcatDeployUrl = "${TOMCAT_URL}/manager/text/deploy?path=/${APP_NAME}&update=true"
-                    
+                    def tomcatUndeployUrl = "${TOMCAT_URL}/manager/text/undeploy?path=/${APP_NAME}"
+
                     sh """
+                    # Rename WAR file
+                    mv target/NumberGuessGame-1.0-SNAPSHOT.war target/${APP_NAME}.war
+
+                    # Ensure the file is present
+                    ls -lh target/
+
+                    # Undeploy existing app (ignore errors if app is not deployed)
+                    curl -v -u ${TOMCAT_USER}:${TOMCAT_PASSWORD} "$tomcatUndeployUrl" || true
+
+                    # Deploy new WAR file
                     curl -v -u ${TOMCAT_USER}:${TOMCAT_PASSWORD} -T target/${APP_NAME}.war "$tomcatDeployUrl"
                     """
                 }
