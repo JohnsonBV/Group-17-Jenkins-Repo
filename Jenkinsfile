@@ -32,6 +32,13 @@ pipeline {
             }
         }
 
+         stages {
+        stage('Undeploy from Tomcat') {
+            steps {
+                script {
+                    sh '''
+                    curl -v -u admin:admin123 "http://3.87.36.102:8080/manager/text/undeploy?path=/NumberGuessGame"
+                    '''
         stage('Deploy to Tomcat') {
             steps {
                 script {
