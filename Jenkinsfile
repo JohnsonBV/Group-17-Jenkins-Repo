@@ -9,7 +9,9 @@ pipeline {
    stages {
        stage('Checkout Code') {
            steps {
-               git branch: 'main', url: 'https://github.com/your-repo.git'
+               git branch: 'main', 
+                  credentialsId: 'd84f6cf3-9967-40d4-83b6-282ed9538e1c',
+                  url: 'https://github.com/JohnsonBV/Group-17-Jenkins-Repo.git'
            }
        }
        stage('Build') {
