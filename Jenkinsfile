@@ -4,6 +4,7 @@ pipeline {
     environment {        
         TOMCAT_DIR = '/opt/tomcat/apache-tomcat-9.0.86/webapps' 
         APP_NAME = "NumberGuessGame"
+        TOMCAT_URL = "http://3.87.36.102:8080"
     }
 
     stages {
@@ -32,8 +33,7 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'tomcat-deploy', usernameVariable: 'admin', passwordVariable: 'admin123')]) {
                         sh """
-                        echo "Undeploying existing app..."
-                       curl -v -u admin:admin123 "http://3.87.36.102:8080/manager/text/list"
+                        curl -v -u $TOMCAT_USER:$TOMCAT_PASSWORD "$TOMCAT_URL/manager/text/undeploy?path=/$APP_NAME" || true
                         """
                     }
                 }
@@ -46,19 +46,8 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'tomcat-deploy', usernameVariable: 'admin', passwordVariable: 'admin123')]) {
                         sh """
                         echo "Deploying to Tomcat..."
-
-                        # Ensure Tomcat directory exists
-                        sudo mkdir -p ${TOMCAT_DIR}
-
-                        # Copy WAR file to Tomcat webapps directory
                         cp target/${APP_NAME}-1.0-SNAPSHOT.war ${TOMCAT_DIR}/${APP_NAME}.war
-
-                        # Restart Tomcat service
                         systemctl restart tomcat || echo "Tomcat restart failed, check logs."
-
-                        # Verify deployment
-                        ls -lh ${TOMCAT_DIR}
-
                         echo "Deployment Complete!"
                         """
                     }
