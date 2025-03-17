@@ -25,13 +25,9 @@ pipeline {
                 sh 'mvn clean package'
                 sh 'ls -l target/'  // Verify that the WAR file exists
                 sh 'if [ ! -f $WAR_FILE ]; then echo "WAR file not found!"; exit 1; fi'
-            }
+                sh 'cd /var/lib/jenkins/workspace/NumberGuessGame && mvn clean package'  
+             }
         }
- stage('Build') {
-   steps {
-       sh 'cd /var/lib/jenkins/workspace/NumberGuessGame && mvn clean package'
-   }
-}
         stage('Verify Workspace') {
    steps {
        sh 'ls -l'
